@@ -29,8 +29,15 @@ struct {
 
 int usage()
 {
-    char msg[] = "Usage: read-file-parallel [-b bufsize (64k)] [-s (FADV_SEQUENTIAL) | -r (FADV_RANDOM)] [-D (dont-drop-page-cache)] filename [filename ...]";
-    fprintf(stderr, "%s\n", msg);
+    char msg[] = "Usage: read-file-parallel options filename [filename ...]\n"
+                 "Options\n"
+                 "    -b bufsize (64k)\n"
+                 "    -s (FADV_SEQUENTIAL)\n"
+                 "    -r (FADV_RANDOM)\n"
+                 "    -D (dont-drop-page-cache)\n"
+                 "If not -D option is not specified, drop page cache before read()\n"
+                 "-s and -r are mutually exclusive\n";
+    fprintf(stderr, "%s", msg);
 
     return 0;
 }
@@ -77,14 +84,22 @@ int child_proc(int proc_num, char *filename, int bufsize)
         err(1, "open for %s", filename);
     }
 
+    int advice = 0;
     if (opts.fadv_sequential) {
-        if (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) < 0) {
-            err(1, "posix_fadvise POSIX_FADV_SEQUENTIAL");
-        }
+        advice = POSIX_FADV_SEQUENTIAL;
     }
-    if (opts.fadv_random) {
-        if (posix_fadvise(fd, 0, 0, POSIX_FADV_RANDOM) < 0) {
-            err(1, "posix_fadvise POSIX_FADV_RANDOM");
+    else if (opts.fadv_random) {
+        advice = POSIX_FADV_RANDOM;
+    }
+    /* if more advise, write here */
+
+    if (opts.debug) {
+        fprintf(stderr, "advice: %d\n", advice);
+    }
+
+    if (advice != 0) {
+        if (posix_fadvise(fd, 0, 0, advice) < 0) {
+            err(1, "posix_fadvise()");
         }
     }
 
