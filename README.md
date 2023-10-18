@@ -5,9 +5,13 @@
 ## Usage
 
 ```
-./read-file-parallel [-D] file0 [file1 ...]
+./read-file-parallel [-s | -r] [-D] file0 [file1 ...]
 -D: ファイルを読み始めるまえにページキャッシュをドロップしない
+-s: posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL): readaheadサイズを通常の2倍にする
+-r: posix_fadvise(fd, 0, 0, POSIX_FADV_RANDOM): readaheadを無効化する
 ```
+
+[posix_fadvise(2) man page](https://man7.org/linux/man-pages/man2/posix_fadvise.2.html)
 
 ## 実装
 

@@ -23,11 +23,13 @@ int pipe_from_child[MAX_CHILD][2];
 struct {
     int debug;
     int dont_drop_pagecache;
-} opts = { 0, 0 };
+    int fadv_sequential;
+    int fadv_random;
+} opts = { 0, 0, 0, 0 };
 
 int usage()
 {
-    char msg[] = "Usage: read-file-parallel [-b bufsize (64k)] [-D (dont-drop-page-cache)] filename [filename ...]";
+    char msg[] = "Usage: read-file-parallel [-b bufsize (64k)] [-s (FADV_SEQUENTIAL) | -r (FADV_RANDOM)] [-D (dont-drop-page-cache)] filename [filename ...]";
     fprintf(stderr, "%s\n", msg);
 
     return 0;
@@ -75,6 +77,17 @@ int child_proc(int proc_num, char *filename, int bufsize)
         err(1, "open for %s", filename);
     }
 
+    if (opts.fadv_sequential) {
+        if (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) < 0) {
+            err(1, "posix_fadvise POSIX_FADV_SEQUENTIAL");
+        }
+    }
+    if (opts.fadv_random) {
+        if (posix_fadvise(fd, 0, 0, POSIX_FADV_RANDOM) < 0) {
+            err(1, "posix_fadvise POSIX_FADV_RANDOM");
+        }
+    }
+
     struct timeval tv0, tv1, elapsed;
     gettimeofday(&tv0, NULL);
     if (opts.debug) {
@@ -108,8 +121,12 @@ int main(int argc, char *argv[])
 {
     long bufsize = 64*1024;
     int c;
-    while ( (c = getopt(argc, argv, "b:dD")) != -1) {
+    while ( (c = getopt(argc, argv, "hb:dDsr")) != -1) {
         switch (c) {
+            case 'h':
+                usage();
+                exit(0);
+                break;
             case 'b':
                 bufsize = get_num(optarg);
                 break;
@@ -118,6 +135,12 @@ int main(int argc, char *argv[])
                 break;
             case 'D':
                 opts.dont_drop_pagecache = 1;
+                break;
+            case 's':
+                opts.fadv_sequential = 1;
+                break;
+            case 'r':
+                opts.fadv_random = 1;
                 break;
             default:
                 break;
@@ -128,6 +151,11 @@ int main(int argc, char *argv[])
 
     if (argc == 0) {
         usage();
+        exit(1);
+    }
+
+    if (opts.fadv_sequential && opts.fadv_random) {
+        fprintf(stderr, "-s and -r are exclusive\n");
         exit(1);
     }
 
