@@ -20,8 +20,10 @@
 int pipe_to_child[MAX_CHILD][2];
 int pipe_from_child[MAX_CHILD][2];
 
-int debug = 0;
-int dont_drop_pagecache = 0;
+struct {
+    int debug;
+    int dont_drop_pagecache;
+} opts = { 0, 0 };
 
 int usage()
 {
@@ -44,7 +46,7 @@ int child_proc(int proc_num, char *filename, int bufsize)
     }
 
     /* prepare process here */
-    if (debug) {
+    if (opts.debug) {
         fprintf(stderr, "%d %s\n", proc_num, filename);
     }
     data_buf = malloc(bufsize);
@@ -75,7 +77,7 @@ int child_proc(int proc_num, char *filename, int bufsize)
 
     struct timeval tv0, tv1, elapsed;
     gettimeofday(&tv0, NULL);
-    if (debug) {
+    if (opts.debug) {
         fprintf(stderr, "%ld.%06ld %d start\n", tv0.tv_sec, tv0.tv_usec, proc_num);
     }
 
@@ -112,10 +114,10 @@ int main(int argc, char *argv[])
                 bufsize = get_num(optarg);
                 break;
             case 'd':
-                debug++;
+                opts.debug++;
                 break;
             case 'D':
-                dont_drop_pagecache = 1;
+                opts.dont_drop_pagecache = 1;
                 break;
             default:
                 break;
@@ -129,7 +131,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    if (debug) {
+    if (opts.debug) {
         fprintf(stderr, "argc: %d\n", argc);
     }
 
@@ -138,7 +140,7 @@ int main(int argc, char *argv[])
         errx(1, "max number of child processes is 1024");
     }
 
-    if (debug) {
+    if (opts.debug) {
         for (int i = 0; i < argc; ++i) {
             fprintf(stderr, "main: argc[%d]: %s\n", i, argv[i]);
         }
@@ -158,7 +160,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (dont_drop_pagecache) {
+    if (opts.dont_drop_pagecache) {
         ;
     }
     else {
@@ -177,7 +179,7 @@ int main(int argc, char *argv[])
             err(1, "pipe_from_child");
         }
         
-        if (debug >= 2) {
+        if (opts.debug >= 2) {
             fprintf(stderr, "pipes:\n");
             fprintf(stderr, "pipe_to_child[%d][0]:     %d\n", i, pipe_to_child[i][0]);
             fprintf(stderr, "pipe_to_child[%d][1]:     %d\n", i, pipe_to_child[i][1]);
@@ -208,7 +210,7 @@ int main(int argc, char *argv[])
         if (n < 0) {
             err(1, "read from child: %d", i);
         }
-        if (debug) {
+        if (opts.debug) {
             fprintf(stderr, "main: from child: %d %c\n", i, buf[0]);
         }
     }
@@ -227,7 +229,7 @@ int main(int argc, char *argv[])
         ;
     }
 
-    if (debug >= 2) {
+    if (opts.debug >= 2) {
         fprintf(stderr, "parent done\n");
     }
 
