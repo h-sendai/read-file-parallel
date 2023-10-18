@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -23,15 +24,18 @@ int pipe_from_child[MAX_CHILD][2];
 struct {
     int debug;
     int dont_drop_pagecache;
+    int use_direct_io;
     int fadv_sequential;
     int fadv_random;
-} opts = { 0, 0, 0, 0 };
+} opts = { 0, 0, 0, 0, 0 };
 
 int usage()
 {
     char msg[] = "Usage: read-file-parallel options filename [filename ...]\n"
                  "Options\n"
+                 "    -d (debug)\n"
                  "    -b bufsize (64k)\n"
+                 "    -i (O_DIRECT)\n"
                  "    -s (FADV_SEQUENTIAL)\n"
                  "    -r (FADV_RANDOM)\n"
                  "    -D (dont-drop-page-cache)\n"
@@ -58,7 +62,12 @@ int child_proc(int proc_num, char *filename, int bufsize)
     if (opts.debug) {
         fprintf(stderr, "%d %s\n", proc_num, filename);
     }
-    data_buf = malloc(bufsize);
+    if (opts.use_direct_io) {
+        data_buf = aligned_alloc(512, bufsize);
+    }
+    else {
+        data_buf = malloc(bufsize);
+    }
     if (data_buf == NULL) {
         err(1, "malloc for %s", filename);
     }
@@ -79,7 +88,11 @@ int child_proc(int proc_num, char *filename, int bufsize)
 
     /* main process here */
 
-    int fd = open(filename, O_RDONLY);
+    int open_flags = O_RDONLY;
+    if (opts.use_direct_io) {
+        open_flags |= O_DIRECT;
+    }
+    int fd = open(filename, open_flags);
     if (fd < 0) {
         err(1, "open for %s", filename);
     }
@@ -136,7 +149,7 @@ int main(int argc, char *argv[])
 {
     long bufsize = 64*1024;
     int c;
-    while ( (c = getopt(argc, argv, "hb:dDsr")) != -1) {
+    while ( (c = getopt(argc, argv, "hb:dDisr")) != -1) {
         switch (c) {
             case 'h':
                 usage();
@@ -150,6 +163,9 @@ int main(int argc, char *argv[])
                 break;
             case 'D':
                 opts.dont_drop_pagecache = 1;
+                break;
+            case 'i':
+                opts.use_direct_io = 1;
                 break;
             case 's':
                 opts.fadv_sequential = 1;

@@ -5,8 +5,9 @@
 ## Usage
 
 ```
-./read-file-parallel [-s | -r] [-D] file0 [file1 ...]
+./read-file-parallel [-i] [-s | -r] [-D] file0 [file1 ...]
 -D: ファイルを読み始めるまえにページキャッシュをドロップしない
+-i: O_DIRECTでopenする(読み出しデータをキャッシュしない)
 -s: posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL): readaheadサイズを通常の2倍にする
 -r: posix_fadvise(fd, 0, 0, POSIX_FADV_RANDOM): readaheadを無効化する
 ```
