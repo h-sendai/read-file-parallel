@@ -23,6 +23,9 @@ I/O size (minimum/optimal): 4096 bytes / 4096 bytes
 Disk label type: gpt
 Disk identifier: D6CEB9AB-1857-4C70-A353-D6174058119E
 
+#         Start          End    Size  Type            Name
+ 1         2048    419432447    200G  Linux filesyste Linux filesystem
+
 mkfs.ext4 /dev/sdc1でフォーマット
 
 mountして
@@ -44,10 +47,6 @@ total 524288
 8912899 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.1
 8912900 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.2
 8912901 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.3
-
-#         Start          End    Size  Type            Name
- 1         2048    419432447    200G  Linux filesyste Linux filesystem
-
 
 ## 1 file (POSIX_FADV_RANDOM)
 
