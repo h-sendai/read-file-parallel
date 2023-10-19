@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+for i in {11..20}; do
+    param=$((256*i))
+    echo "---> $param"
+    sudo blockdev --setra $param /dev/sdc1
+    for j in {1..10}; do
+        ../read-file-parallel /mnt/sendai/test.file.{0,1} |& tee -a $param
+    done
+done
