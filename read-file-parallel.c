@@ -138,8 +138,8 @@ int child_proc(int proc_num, char *filename, int bufsize)
 
     double read_time = (double)elapsed.tv_sec + 0.000001*elapsed.tv_usec;
     double read_rate = (double)total_read_bytes / read_time / 1024.0 / 1024.0;
-    printf("%ld.%06ld %.3f MB/s %s %d\n", 
-        elapsed.tv_sec, elapsed.tv_usec, read_rate, filename, proc_num);
+    printf("%.3f MB/s %ld bytes %ld.%06ld sec %s %d\n", 
+        read_rate, total_read_bytes, elapsed.tv_sec, elapsed.tv_usec, filename, proc_num);
     fflush(stdout);
 
     return 0;
