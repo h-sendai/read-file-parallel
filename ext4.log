@@ -1,3 +1,9 @@
+## OS
+
+CentOS 7
+
+kernel: 3.10.0-1160.92.1.el7.x86_64
+
 ## Disk
 
 lsblk -Sの出力
