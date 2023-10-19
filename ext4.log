@@ -1,0 +1,377 @@
+## Disk
+
+lsblk -Sの出力
+
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sdc  3:0:0:0    disk ATA      HGST HDN724040AL A5E0 sata
+
+
+fdisk -l /dev/sdcの出力
+
+Disk /dev/sdc: 4000.8 GB, 4000787030016 bytes, 7814037168 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 4096 bytes
+I/O size (minimum/optimal): 4096 bytes / 4096 bytes
+Disk label type: gpt
+Disk identifier: D6CEB9AB-1857-4C70-A353-D6174058119E
+
+mkfs.ext4 /dev/sdc1でフォーマット
+
+mountして
+
+dd if=/dev/zero of=test.file.0 bs=1024k count=128
+
+でtest.file.0を作成
+
+cp test.file.0 test.file.1
+cp test.file.0 test.file.2
+cp test.file.0 test.file.3
+
+でtest.file.{1,2,3}を作成
+
+ls -liの出力
+
+total 524288
+8912898 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.0
+8912899 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.1
+8912900 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.2
+8912901 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.3
+
+#         Start          End    Size  Type            Name
+ 1         2048    419432447    200G  Linux filesyste Linux filesystem
+
+
+## 1 file (POSIX_FADV_RANDOM)
+
+157.164 MB/s 134217728 bytes 0.814437 sec /mnt/sendai/test.file.0 0
+-
+157.880 MB/s 134217728 bytes 0.810741 sec /mnt/sendai/test.file.0 0
+-
+157.880 MB/s 134217728 bytes 0.810744 sec /mnt/sendai/test.file.0 0
+-
+157.874 MB/s 134217728 bytes 0.810774 sec /mnt/sendai/test.file.0 0
+-
+157.881 MB/s 134217728 bytes 0.810739 sec /mnt/sendai/test.file.0 0
+-
+157.909 MB/s 134217728 bytes 0.810596 sec /mnt/sendai/test.file.0 0
+-
+157.905 MB/s 134217728 bytes 0.810612 sec /mnt/sendai/test.file.0 0
+-
+157.916 MB/s 134217728 bytes 0.810558 sec /mnt/sendai/test.file.0 0
+-
+157.841 MB/s 134217728 bytes 0.810942 sec /mnt/sendai/test.file.0 0
+-
+157.821 MB/s 134217728 bytes 0.811045 sec /mnt/sendai/test.file.0 0
+-
+average: 157.807100 ( 0.216174 )
+
+## 1 file (POSIX_FADV_NORMAL)
+
+158.458 MB/s 134217728 bytes 0.807785 sec /mnt/sendai/test.file.0 0
+-
+157.435 MB/s 134217728 bytes 0.813032 sec /mnt/sendai/test.file.0 0
+-
+157.360 MB/s 134217728 bytes 0.813420 sec /mnt/sendai/test.file.0 0
+-
+157.374 MB/s 134217728 bytes 0.813350 sec /mnt/sendai/test.file.0 0
+-
+157.393 MB/s 134217728 bytes 0.813250 sec /mnt/sendai/test.file.0 0
+-
+157.430 MB/s 134217728 bytes 0.813058 sec /mnt/sendai/test.file.0 0
+-
+157.396 MB/s 134217728 bytes 0.813235 sec /mnt/sendai/test.file.0 0
+-
+157.396 MB/s 134217728 bytes 0.813235 sec /mnt/sendai/test.file.0 0
+-
+157.730 MB/s 134217728 bytes 0.811512 sec /mnt/sendai/test.file.0 0
+-
+157.389 MB/s 134217728 bytes 0.813274 sec /mnt/sendai/test.file.0 0
+-
+average: 157.536 MB/s (0.323672)
+
+## 1 file (POSIX_FADV_SEQUENTIAL)
+
+155.009 MB/s 134217728 bytes 0.825761 sec /mnt/sendai/test.file.0 0
+-
+157.458 MB/s 134217728 bytes 0.812915 sec /mnt/sendai/test.file.0 0
+-
+157.471 MB/s 134217728 bytes 0.812848 sec /mnt/sendai/test.file.0 0
+-
+157.594 MB/s 134217728 bytes 0.812213 sec /mnt/sendai/test.file.0 0
+-
+157.483 MB/s 134217728 bytes 0.812784 sec /mnt/sendai/test.file.0 0
+-
+157.468 MB/s 134217728 bytes 0.812863 sec /mnt/sendai/test.file.0 0
+-
+157.447 MB/s 134217728 bytes 0.812971 sec /mnt/sendai/test.file.0 0
+-
+157.519 MB/s 134217728 bytes 0.812599 sec /mnt/sendai/test.file.0 0
+-
+157.484 MB/s 134217728 bytes 0.812779 sec /mnt/sendai/test.file.0 0
+-
+157.469 MB/s 134217728 bytes 0.812858 sec /mnt/sendai/test.file.0 0
+average: 157.240200 ( 0.744799 )
+
+## 2 files (POSIX_FADV_RANDOM)
+
+28.800 MB/s 134217728 bytes 4.444413 sec /mnt/sendai/test.file.0 0
+28.770 MB/s 134217728 bytes 4.449012 sec /mnt/sendai/test.file.1 1
+-
+29.033 MB/s 134217728 bytes 4.408837 sec /mnt/sendai/test.file.0 0
+29.002 MB/s 134217728 bytes 4.413437 sec /mnt/sendai/test.file.1 1
+-
+28.815 MB/s 134217728 bytes 4.442066 sec /mnt/sendai/test.file.0 0
+28.786 MB/s 134217728 bytes 4.446663 sec /mnt/sendai/test.file.1 1
+-
+28.815 MB/s 134217728 bytes 4.442097 sec /mnt/sendai/test.file.0 0
+28.785 MB/s 134217728 bytes 4.446693 sec /mnt/sendai/test.file.1 1
+-
+28.924 MB/s 134217728 bytes 4.425438 sec /mnt/sendai/test.file.0 0
+28.894 MB/s 134217728 bytes 4.430035 sec /mnt/sendai/test.file.1 1
+-
+28.869 MB/s 134217728 bytes 4.433776 sec /mnt/sendai/test.file.0 0
+28.839 MB/s 134217728 bytes 4.438371 sec /mnt/sendai/test.file.1 1
+-
+29.034 MB/s 134217728 bytes 4.408687 sec /mnt/sendai/test.file.0 0
+29.003 MB/s 134217728 bytes 4.413302 sec /mnt/sendai/test.file.1 1
+-
+28.763 MB/s 134217728 bytes 4.450121 sec /mnt/sendai/test.file.0 0
+28.734 MB/s 134217728 bytes 4.454721 sec /mnt/sendai/test.file.1 1
+-
+28.815 MB/s 134217728 bytes 4.442163 sec /mnt/sendai/test.file.0 0
+28.814 MB/s 134217728 bytes 4.442318 sec /mnt/sendai/test.file.1 1
+-
+28.859 MB/s 134217728 bytes 4.435333 sec /mnt/sendai/test.file.0 0
+28.829 MB/s 134217728 bytes 4.439934 sec /mnt/sendai/test.file.1 1
+-
+average: 28.859150 ( 0.090503 )
+
+## 2 files (POSIX_FADV_NORMAL)
+
+30.198 MB/s 134217728 bytes 4.238736 sec /mnt/sendai/test.file.1 1
+30.118 MB/s 134217728 bytes 4.249902 sec /mnt/sendai/test.file.0 0
+-
+30.163 MB/s 134217728 bytes 4.243602 sec /mnt/sendai/test.file.1 1
+30.084 MB/s 134217728 bytes 4.254768 sec /mnt/sendai/test.file.0 0
+-
+30.164 MB/s 134217728 bytes 4.243533 sec /mnt/sendai/test.file.1 1
+30.084 MB/s 134217728 bytes 4.254701 sec /mnt/sendai/test.file.0 0
+-
+30.046 MB/s 134217728 bytes 4.260138 sec /mnt/sendai/test.file.1 1
+29.967 MB/s 134217728 bytes 4.271303 sec /mnt/sendai/test.file.0 0
+-
+29.987 MB/s 134217728 bytes 4.268538 sec /mnt/sendai/test.file.1 1
+29.909 MB/s 134217728 bytes 4.279703 sec /mnt/sendai/test.file.0 0
+-
+29.986 MB/s 134217728 bytes 4.268602 sec /mnt/sendai/test.file.1 1
+29.908 MB/s 134217728 bytes 4.279764 sec /mnt/sendai/test.file.0 0
+-
+29.987 MB/s 134217728 bytes 4.268497 sec /mnt/sendai/test.file.1 1
+29.909 MB/s 134217728 bytes 4.279666 sec /mnt/sendai/test.file.0 0
+-
+29.933 MB/s 134217728 bytes 4.276193 sec /mnt/sendai/test.file.1 1
+29.855 MB/s 134217728 bytes 4.287332 sec /mnt/sendai/test.file.0 0
+-
+29.928 MB/s 134217728 bytes 4.276950 sec /mnt/sendai/test.file.1 1
+29.850 MB/s 134217728 bytes 4.288091 sec /mnt/sendai/test.file.0 0
+-
+29.929 MB/s 134217728 bytes 4.276772 sec /mnt/sendai/test.file.1 1
+29.851 MB/s 134217728 bytes 4.287955 sec /mnt/sendai/test.file.0 0
+-
+average: 29.992800 ( 0.106975 )
+
+## 2 files (POSIX_FADV_SEQUENTIAL)
+
+37.738 MB/s 134217728 bytes 3.391845 sec /mnt/sendai/test.file.0 0
+37.719 MB/s 134217728 bytes 3.393473 sec /mnt/sendai/test.file.1 1
+-
+46.346 MB/s 134217728 bytes 2.761842 sec /mnt/sendai/test.file.0 0
+46.168 MB/s 134217728 bytes 2.772482 sec /mnt/sendai/test.file.1 1
+-
+46.057 MB/s 134217728 bytes 2.779188 sec /mnt/sendai/test.file.0 0
+46.030 MB/s 134217728 bytes 2.780815 sec /mnt/sendai/test.file.1 1
+-
+45.679 MB/s 134217728 bytes 2.802144 sec /mnt/sendai/test.file.0 0
+45.349 MB/s 134217728 bytes 2.822523 sec /mnt/sendai/test.file.1 1
+-
+45.085 MB/s 134217728 bytes 2.839073 sec /mnt/sendai/test.file.1 1
+45.026 MB/s 134217728 bytes 2.842812 sec /mnt/sendai/test.file.0 0
+-
+45.701 MB/s 134217728 bytes 2.800800 sec /mnt/sendai/test.file.1 1
+45.640 MB/s 134217728 bytes 2.804533 sec /mnt/sendai/test.file.0 0
+-
+44.660 MB/s 134217728 bytes 2.866095 sec /mnt/sendai/test.file.0 0
+44.635 MB/s 134217728 bytes 2.867722 sec /mnt/sendai/test.file.1 1
+-
+44.822 MB/s 134217728 bytes 2.855724 sec /mnt/sendai/test.file.1 1
+44.764 MB/s 134217728 bytes 2.859463 sec /mnt/sendai/test.file.0 0
+-
+47.243 MB/s 134217728 bytes 2.709374 sec /mnt/sendai/test.file.1 1
+47.178 MB/s 134217728 bytes 2.713115 sec /mnt/sendai/test.file.0 0
+-
+45.453 MB/s 134217728 bytes 2.816066 sec /mnt/sendai/test.file.0 0
+45.427 MB/s 134217728 bytes 2.817699 sec /mnt/sendai/test.file.1 1
+
+average: 44.836000 ( 2.475439 )
+
+## 4 files (POSIX_FADV_RANDOM)
+
+11.419 MB/s 134217728 bytes 11.209151 sec /mnt/sendai/test.file.1 1
+11.257 MB/s 134217728 bytes 11.370495 sec /mnt/sendai/test.file.0 0
+11.239 MB/s 134217728 bytes 11.389192 sec /mnt/sendai/test.file.3 3
+11.228 MB/s 134217728 bytes 11.400054 sec /mnt/sendai/test.file.2 2
+-
+11.616 MB/s 134217728 bytes 11.019213 sec /mnt/sendai/test.file.1 1
+11.517 MB/s 134217728 bytes 11.113974 sec /mnt/sendai/test.file.0 0
+11.366 MB/s 134217728 bytes 11.261367 sec /mnt/sendai/test.file.2 2
+11.348 MB/s 134217728 bytes 11.279993 sec /mnt/sendai/test.file.3 3
+-
+11.164 MB/s 134217728 bytes 11.465014 sec /mnt/sendai/test.file.3 3
+11.144 MB/s 134217728 bytes 11.485514 sec /mnt/sendai/test.file.1 1
+11.075 MB/s 134217728 bytes 11.557512 sec /mnt/sendai/test.file.0 0
+11.071 MB/s 134217728 bytes 11.561614 sec /mnt/sendai/test.file.2 2
+-
+11.481 MB/s 134217728 bytes 11.149035 sec /mnt/sendai/test.file.3 3
+11.464 MB/s 134217728 bytes 11.165007 sec /mnt/sendai/test.file.1 1
+11.416 MB/s 134217728 bytes 11.212185 sec /mnt/sendai/test.file.0 0
+11.398 MB/s 134217728 bytes 11.230242 sec /mnt/sendai/test.file.2 2
+-
+11.496 MB/s 134217728 bytes 11.134075 sec /mnt/sendai/test.file.3 3
+11.475 MB/s 134217728 bytes 11.154783 sec /mnt/sendai/test.file.1 1
+11.407 MB/s 134217728 bytes 11.220887 sec /mnt/sendai/test.file.0 0
+11.389 MB/s 134217728 bytes 11.239052 sec /mnt/sendai/test.file.2 2
+-
+11.273 MB/s 134217728 bytes 11.354408 sec /mnt/sendai/test.file.1 1
+11.179 MB/s 134217728 bytes 11.450300 sec /mnt/sendai/test.file.0 0
+11.166 MB/s 134217728 bytes 11.463410 sec /mnt/sendai/test.file.3 3
+11.157 MB/s 134217728 bytes 11.472172 sec /mnt/sendai/test.file.2 2
+-
+11.372 MB/s 134217728 bytes 11.255701 sec /mnt/sendai/test.file.3 3
+11.328 MB/s 134217728 bytes 11.299081 sec /mnt/sendai/test.file.1 1
+11.304 MB/s 134217728 bytes 11.322995 sec /mnt/sendai/test.file.0 0
+11.290 MB/s 134217728 bytes 11.337029 sec /mnt/sendai/test.file.2 2
+-
+11.222 MB/s 134217728 bytes 11.406097 sec /mnt/sendai/test.file.1 1
+11.088 MB/s 134217728 bytes 11.544396 sec /mnt/sendai/test.file.2 2
+11.043 MB/s 134217728 bytes 11.590908 sec /mnt/sendai/test.file.0 0
+11.036 MB/s 134217728 bytes 11.598601 sec /mnt/sendai/test.file.3 3
+-
+11.180 MB/s 134217728 bytes 11.449205 sec /mnt/sendai/test.file.1 1
+11.022 MB/s 134217728 bytes 11.612894 sec /mnt/sendai/test.file.0 0
+10.895 MB/s 134217728 bytes 11.748676 sec /mnt/sendai/test.file.2 2
+10.886 MB/s 134217728 bytes 11.758150 sec /mnt/sendai/test.file.3 3
+-
+11.408 MB/s 134217728 bytes 11.219872 sec /mnt/sendai/test.file.1 1
+11.280 MB/s 134217728 bytes 11.347238 sec /mnt/sendai/test.file.3 3
+11.255 MB/s 134217728 bytes 11.372868 sec /mnt/sendai/test.file.0 0
+11.249 MB/s 134217728 bytes 11.378562 sec /mnt/sendai/test.file.2 2
+-
+average: 11.265075 ( 0.168611 )
+
+## 4 files (POSIX_FADV_NORMAL)
+
+14.554 MB/s 134217728 bytes 8.794865 sec /mnt/sendai/test.file.1 1
+14.412 MB/s 134217728 bytes 8.881298 sec /mnt/sendai/test.file.3 3
+14.185 MB/s 134217728 bytes 9.023589 sec /mnt/sendai/test.file.0 0
+14.176 MB/s 134217728 bytes 9.029290 sec /mnt/sendai/test.file.2 2
+-
+14.940 MB/s 134217728 bytes 8.567431 sec /mnt/sendai/test.file.0 0
+14.495 MB/s 134217728 bytes 8.830344 sec /mnt/sendai/test.file.1 1
+14.355 MB/s 134217728 bytes 8.916780 sec /mnt/sendai/test.file.3 3
+14.345 MB/s 134217728 bytes 8.923107 sec /mnt/sendai/test.file.2 2
+-
+14.664 MB/s 134217728 bytes 8.729048 sec /mnt/sendai/test.file.1 1
+14.575 MB/s 134217728 bytes 8.782146 sec /mnt/sendai/test.file.3 3
+14.410 MB/s 134217728 bytes 8.882773 sec /mnt/sendai/test.file.0 0
+14.401 MB/s 134217728 bytes 8.888475 sec /mnt/sendai/test.file.2 2
+-
+15.801 MB/s 134217728 bytes 8.100808 sec /mnt/sendai/test.file.0 0
+15.568 MB/s 134217728 bytes 8.222063 sec /mnt/sendai/test.file.1 1
+15.317 MB/s 134217728 bytes 8.356494 sec /mnt/sendai/test.file.2 2
+15.178 MB/s 134217728 bytes 8.433488 sec /mnt/sendai/test.file.3 3
+-
+14.844 MB/s 134217728 bytes 8.623032 sec /mnt/sendai/test.file.3 3
+14.607 MB/s 134217728 bytes 8.762746 sec /mnt/sendai/test.file.1 1
+14.538 MB/s 134217728 bytes 8.804357 sec /mnt/sendai/test.file.2 2
+14.493 MB/s 134217728 bytes 8.831979 sec /mnt/sendai/test.file.0 0
+-
+14.939 MB/s 134217728 bytes 8.568360 sec /mnt/sendai/test.file.1 1
+14.441 MB/s 134217728 bytes 8.863748 sec /mnt/sendai/test.file.0 0
+14.432 MB/s 134217728 bytes 8.869448 sec /mnt/sendai/test.file.2 2
+14.388 MB/s 134217728 bytes 8.896451 sec /mnt/sendai/test.file.3 3
+-
+15.106 MB/s 134217728 bytes 8.473249 sec /mnt/sendai/test.file.3 3
+14.456 MB/s 134217728 bytes 8.854661 sec /mnt/sendai/test.file.1 1
+14.424 MB/s 134217728 bytes 8.873853 sec /mnt/sendai/test.file.0 0
+14.415 MB/s 134217728 bytes 8.879552 sec /mnt/sendai/test.file.2 2
+-
+14.855 MB/s 134217728 bytes 8.616857 sec /mnt/sendai/test.file.3 3
+14.476 MB/s 134217728 bytes 8.842476 sec /mnt/sendai/test.file.0 0
+14.439 MB/s 134217728 bytes 8.864843 sec /mnt/sendai/test.file.2 2
+14.414 MB/s 134217728 bytes 8.880402 sec /mnt/sendai/test.file.1 1
+-
+15.349 MB/s 134217728 bytes 8.339345 sec /mnt/sendai/test.file.1 1
+15.042 MB/s 134217728 bytes 8.509738 sec /mnt/sendai/test.file.0 0
+14.729 MB/s 134217728 bytes 8.690427 sec /mnt/sendai/test.file.2 2
+14.697 MB/s 134217728 bytes 8.709095 sec /mnt/sendai/test.file.3 3
+-
+14.988 MB/s 134217728 bytes 8.540422 sec /mnt/sendai/test.file.0 0
+14.496 MB/s 134217728 bytes 8.830066 sec /mnt/sendai/test.file.1 1
+14.483 MB/s 134217728 bytes 8.837769 sec /mnt/sendai/test.file.2 2
+14.466 MB/s 134217728 bytes 8.848100 sec /mnt/sendai/test.file.3 3
+-
+average: 14.672325 ( 0.370354 )
+
+## 4 files (POSIX_FADV_SEQUENTIAL)
+
+19.160 MB/s 134217728 bytes 6.680553 sec /mnt/sendai/test.file.3 3
+19.159 MB/s 134217728 bytes 6.680847 sec /mnt/sendai/test.file.0 0
+19.071 MB/s 134217728 bytes 6.711721 sec /mnt/sendai/test.file.1 1
+19.055 MB/s 134217728 bytes 6.717477 sec /mnt/sendai/test.file.2 2
+-
+18.725 MB/s 134217728 bytes 6.835757 sec /mnt/sendai/test.file.3 3
+18.647 MB/s 134217728 bytes 6.864339 sec /mnt/sendai/test.file.2 2
+18.564 MB/s 134217728 bytes 6.894941 sec /mnt/sendai/test.file.0 0
+18.560 MB/s 134217728 bytes 6.896567 sec /mnt/sendai/test.file.1 1
+-
+18.678 MB/s 134217728 bytes 6.852866 sec /mnt/sendai/test.file.0 0
+18.678 MB/s 134217728 bytes 6.853143 sec /mnt/sendai/test.file.3 3
+18.621 MB/s 134217728 bytes 6.873942 sec /mnt/sendai/test.file.1 1
+18.597 MB/s 134217728 bytes 6.882745 sec /mnt/sendai/test.file.2 2
+-
+18.550 MB/s 134217728 bytes 6.900104 sec /mnt/sendai/test.file.3 3
+18.386 MB/s 134217728 bytes 6.961903 sec /mnt/sendai/test.file.0 0
+18.306 MB/s 134217728 bytes 6.992321 sec /mnt/sendai/test.file.1 1
+18.291 MB/s 134217728 bytes 6.998093 sec /mnt/sendai/test.file.2 2
+-
+18.507 MB/s 134217728 bytes 6.916423 sec /mnt/sendai/test.file.1 1
+18.419 MB/s 134217728 bytes 6.949249 sec /mnt/sendai/test.file.2 2
+18.414 MB/s 134217728 bytes 6.951183 sec /mnt/sendai/test.file.0 0
+18.413 MB/s 134217728 bytes 6.951459 sec /mnt/sendai/test.file.3 3
+-
+18.061 MB/s 134217728 bytes 7.086970 sec /mnt/sendai/test.file.2 2
+18.035 MB/s 134217728 bytes 7.097308 sec /mnt/sendai/test.file.3 3
+18.005 MB/s 134217728 bytes 7.109104 sec /mnt/sendai/test.file.0 0
+17.980 MB/s 134217728 bytes 7.119199 sec /mnt/sendai/test.file.1 1
+-
+18.697 MB/s 134217728 bytes 6.846144 sec /mnt/sendai/test.file.0 0
+18.682 MB/s 134217728 bytes 6.851559 sec /mnt/sendai/test.file.3 3
+18.545 MB/s 134217728 bytes 6.902217 sec /mnt/sendai/test.file.1 1
+18.530 MB/s 134217728 bytes 6.907883 sec /mnt/sendai/test.file.2 2
+-
+17.676 MB/s 134217728 bytes 7.241574 sec /mnt/sendai/test.file.1 1
+17.675 MB/s 134217728 bytes 7.241850 sec /mnt/sendai/test.file.3 3
+17.674 MB/s 134217728 bytes 7.242429 sec /mnt/sendai/test.file.0 0
+17.660 MB/s 134217728 bytes 7.248127 sec /mnt/sendai/test.file.2 2
+-
+19.184 MB/s 134217728 bytes 6.672393 sec /mnt/sendai/test.file.3 3
+19.181 MB/s 134217728 bytes 6.673221 sec /mnt/sendai/test.file.1 1
+19.147 MB/s 134217728 bytes 6.685061 sec /mnt/sendai/test.file.0 0
+19.109 MB/s 134217728 bytes 6.698414 sec /mnt/sendai/test.file.2 2
+-
+18.447 MB/s 134217728 bytes 6.938621 sec /mnt/sendai/test.file.1 1
+18.378 MB/s 134217728 bytes 6.964722 sec /mnt/sendai/test.file.2 2
+18.307 MB/s 134217728 bytes 6.991930 sec /mnt/sendai/test.file.3 3
+18.306 MB/s 134217728 bytes 6.992354 sec /mnt/sendai/test.file.0 0
+-
+average: 18.502000 ( 0.428658 )
