@@ -4,6 +4,8 @@ CentOS 7
 
 kernel: 3.10.0-1160.92.1.el7.x86_64
 
+/sys/block/sdc/queue/read_ahead_kb 128
+
 ## Disk
 
 lsblk -Sの出力
