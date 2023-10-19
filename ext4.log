@@ -48,6 +48,14 @@ total 524288
 8912900 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.2
 8912901 -rw-rw-r-- 1 sendai sendai 134217728 Oct 19 10:01 test.file.3
 
+POSIX_FADV_* 毎のプログラムの起動
+
+POSIX_FADV_RANDOM:      ./read-file-parallel -r /mnt/sendai/test.file.0
+POSIX_FADV_NORMAL:      ./read-file-parallel    /mnt/sendai/test.file.0
+POSIX_FADV_SEQUENTIAL : ./read-file-parallel -s /mnt/sendai/test.file.0
+
+POSIX_FADV_NORMALはプログラム中ではとくにはposix_fadvise()していない。
+
 ## 1 file (POSIX_FADV_RANDOM)
 
 157.164 MB/s 134217728 bytes 0.814437 sec /mnt/sendai/test.file.0 0
