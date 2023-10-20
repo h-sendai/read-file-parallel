@@ -4,6 +4,7 @@
 *~
 test.file*
 read-file-parallel
+time.*
 #
 # to create empty directory and add it to repository:
 # mkdir log

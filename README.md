@@ -5,11 +5,12 @@
 ## Usage
 
 ```
-./read-file-parallel [-i] [-s | -r] [-D] file0 [file1 ...]
+./read-file-parallel [-i] [-s | -r] [-D] [-t] file0 [file1 ...]
 -D: ファイルを読み始めるまえにページキャッシュをドロップしない
 -i: O_DIRECTでopenする(読み出しデータをキャッシュしない)
 -s: posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL): readaheadサイズを通常の2倍にする
 -r: posix_fadvise(fd, 0, 0, POSIX_FADV_RANDOM): readaheadを無効化する
+-t: read()後の時刻を記録して、ファイル読み出し終了後time.<parent_pid>.<proc_num>ファイルに出力する。
 ```
 
 [posix_fadvise(2) man page](https://man7.org/linux/man-pages/man2/posix_fadvise.2.html)

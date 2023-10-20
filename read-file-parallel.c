@@ -7,6 +7,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,8 @@
 
 int pipe_to_child[MAX_CHILD][2];
 int pipe_from_child[MAX_CHILD][2];
+pid_t parent_pid;
+struct timeval start_time;
 
 struct {
     int debug;
@@ -27,7 +30,13 @@ struct {
     int use_direct_io;
     int fadv_sequential;
     int fadv_random;
-} opts = { 0, 0, 0, 0, 0 };
+    int record_time;
+} opts = { 0, 0, 0, 0, 0, 0 };
+
+struct time_record {
+    struct timeval tv;
+    int    cpu_num;
+};
 
 int usage()
 {
@@ -46,10 +55,26 @@ int usage()
     return 0;
 }
 
+off_t get_filesize(char *path)
+{
+    struct stat st;
+    if (stat(path, &st) < 0) {
+        warn("stat");
+        return -1;
+    }
+
+    return st.st_size;
+}
+
 int child_proc(int proc_num, char *filename, int bufsize)
 {
     int n;
     char *data_buf;
+    //struct timeval *ts = NULL;
+    struct time_record *time_record = NULL;
+
+    //int index_ts = 0;
+    int time_record_index = 0;
 
     if (close(pipe_to_child[proc_num][1]) < 0) {
         err(1, "close(pipe_to_child");
@@ -62,6 +87,7 @@ int child_proc(int proc_num, char *filename, int bufsize)
     if (opts.debug) {
         fprintf(stderr, "%d %s\n", proc_num, filename);
     }
+
     if (opts.use_direct_io) {
         data_buf = aligned_alloc(512, bufsize);
     }
@@ -71,7 +97,21 @@ int child_proc(int proc_num, char *filename, int bufsize)
     if (data_buf == NULL) {
         err(1, "malloc for %s", filename);
     }
-    
+
+    if (opts.record_time) {
+        off_t filesize = get_filesize(filename);
+        if (filesize < 0) {
+            errx(1, "get_filesize()");
+        }
+        int n_time_record = filesize / bufsize;
+        //ts = (struct timeval *)malloc(sizeof(struct timeval)*n_ts);
+        time_record = (struct time_record *)malloc(sizeof(struct time_record)*n_time_record);
+        if (time_record == NULL) {
+            err(1, "malloc for ts");
+        }
+    };
+
+    /* prepare done */
     /* tell ready to master process */
     char d = 'd';
     n = write(pipe_from_child[proc_num][1], &d, 1);
@@ -132,6 +172,11 @@ int child_proc(int proc_num, char *filename, int bufsize)
             err(1, "read for %s", filename);
         }
         total_read_bytes += n;
+        if (opts.record_time) {
+            gettimeofday(&time_record[time_record_index].tv, NULL);
+            time_record[time_record_index].cpu_num = sched_getcpu();
+            time_record_index ++;
+        }
     }
     gettimeofday(&tv1, NULL);
     timersub(&tv1, &tv0, &elapsed);
@@ -142,6 +187,40 @@ int child_proc(int proc_num, char *filename, int bufsize)
         read_rate, total_read_bytes, elapsed.tv_sec, elapsed.tv_usec, filename, proc_num);
     fflush(stdout);
 
+    if (opts.record_time) {
+        /* tell ready to master process */
+        char d = 'd';
+        n = write(pipe_from_child[proc_num][1], &d, 1);
+        if (n < 0) {
+            err(1, "write from child: %d", proc_num);
+        }
+
+        /* wait from master */
+        char buf[4];
+        n = read(pipe_to_child[proc_num][0], buf, 1);
+        if (n < 0) {
+            err(1, "read on child: %d", proc_num);
+        }
+        
+        /* then print timestamps */
+        
+        if (opts.debug) {
+            fprintf(stderr, "proc_num: %d: output time_record\n", proc_num);
+        }
+
+        char output_filename[1024];
+        snprintf(output_filename, sizeof(output_filename), "time.%d.%d", parent_pid, proc_num);
+        FILE *fp = fopen(output_filename, "w");
+        if (fp == NULL) {
+            err(1, "fopen");
+        }
+        struct timeval elapsed;
+        for (int i = 0; i < time_record_index; ++i) {
+            timersub(&time_record[i].tv, &start_time, &elapsed);
+            fprintf(fp, "%ld.%06ld %d %d\n", elapsed.tv_sec, elapsed.tv_usec, proc_num, time_record[i].cpu_num);
+        }
+    }
+        
     return 0;
 }
 
@@ -149,7 +228,7 @@ int main(int argc, char *argv[])
 {
     long bufsize = 64*1024;
     int c;
-    while ( (c = getopt(argc, argv, "hb:dDisr")) != -1) {
+    while ( (c = getopt(argc, argv, "hb:dDisrt")) != -1) {
         switch (c) {
             case 'h':
                 usage();
@@ -173,6 +252,9 @@ int main(int argc, char *argv[])
             case 'r':
                 opts.fadv_random = 1;
                 break;
+            case 't':
+                opts.record_time = 1;
+                break;
             default:
                 break;
         }
@@ -193,6 +275,9 @@ int main(int argc, char *argv[])
     if (opts.debug) {
         fprintf(stderr, "argc: %d\n", argc);
     }
+
+    /* used in record time files if record_time option is specified */
+    parent_pid = getpid();
 
     int n_child = argc;
     if (n_child > MAX_CHILD) {
@@ -229,6 +314,8 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    gettimeofday(&start_time, NULL);
 
     for (int i = 0; i < n_child; ++i) {
         if (pipe(pipe_to_child[i]) < 0) {
@@ -280,6 +367,26 @@ int main(int argc, char *argv[])
         int n = write(pipe_to_child[i][1], &g, 1);
         if (n < 0) {
             err(1, "write to %d", i);
+        }
+    }
+
+    if (opts.record_time) {
+        for (int i = 0; i < n_child; ++i) {
+            char buf[4];
+            int n = read(pipe_from_child[i][0], buf, 1);
+            if (n < 0) {
+                err(1, "read from child: %d", i);
+            }
+            if (opts.debug) {
+                fprintf(stderr, "main: from child: %d %c\n", i, buf[0]);
+            }
+        }
+        for (int i = 0; i < n_child; ++i) {
+            char g = 'g';
+            int n = write(pipe_to_child[i][1], &g, 1);
+            if (n < 0) {
+                err(1, "write to %d", i);
+            }
         }
     }
 
