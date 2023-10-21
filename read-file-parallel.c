@@ -104,6 +104,7 @@ int child_proc(int proc_num, char *filename, int bufsize)
             errx(1, "get_filesize()");
         }
         int n_time_record = filesize / bufsize;
+        n_time_record += 1; /* in case of filesize/bufsize if not integer */
         //ts = (struct timeval *)malloc(sizeof(struct timeval)*n_ts);
         time_record = (struct time_record *)malloc(sizeof(struct time_record)*n_time_record);
         if (time_record == NULL) {
