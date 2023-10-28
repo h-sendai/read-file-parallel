@@ -31,7 +31,8 @@ struct {
     int fadv_sequential;
     int fadv_random;
     int record_time;
-} opts = { 0, 0, 0, 0, 0, 0 };
+    long target_read_bytes;
+} opts = { 0, 0, 0, 0, 0, 0, 0 };
 
 struct time_record {
     struct timeval tv;
@@ -48,6 +49,7 @@ int usage()
                  "    -s (FADV_SEQUENTIAL)\n"
                  "    -r (FADV_RANDOM)\n"
                  "    -D (dont-drop-page-cache)\n"
+                 "    -n total_read_bytes (exit after read this bytes)\n"
                  "If not -D option is not specified, drop page cache before read()\n"
                  "-s and -r are mutually exclusive\n";
     fprintf(stderr, "%s", msg);
@@ -178,6 +180,11 @@ int child_proc(int proc_num, char *filename, int bufsize)
             time_record[time_record_index].cpu_num = sched_getcpu();
             time_record_index ++;
         }
+        if (opts.target_read_bytes > 0) {
+            if (total_read_bytes >= opts.target_read_bytes) {
+                break;
+            }
+        }
     }
     gettimeofday(&tv1, NULL);
     timersub(&tv1, &tv0, &elapsed);
@@ -229,7 +236,7 @@ int main(int argc, char *argv[])
 {
     long bufsize = 64*1024;
     int c;
-    while ( (c = getopt(argc, argv, "hb:dDisrt")) != -1) {
+    while ( (c = getopt(argc, argv, "hb:dDin:srt")) != -1) {
         switch (c) {
             case 'h':
                 usage();
@@ -246,6 +253,9 @@ int main(int argc, char *argv[])
                 break;
             case 'i':
                 opts.use_direct_io = 1;
+                break;
+            case 'n':
+                opts.target_read_bytes = get_num(optarg);
                 break;
             case 's':
                 opts.fadv_sequential = 1;
