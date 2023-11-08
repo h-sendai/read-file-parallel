@@ -50,6 +50,7 @@ int usage()
                  "    -r (FADV_RANDOM)\n"
                  "    -D (dont-drop-page-cache)\n"
                  "    -n total_read_bytes (exit after read this bytes)\n"
+                 "    -t save each read time to time.<parent_pid>.<proc_num(0, 1, 2, ...)>\n"
                  "If not -D option is not specified, drop page cache before read()\n"
                  "-s and -r are mutually exclusive\n";
     fprintf(stderr, "%s", msg);
