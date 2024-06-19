@@ -48,7 +48,7 @@ int usage()
                  "    -i (O_DIRECT)\n"
                  "    -s (FADV_SEQUENTIAL)\n"
                  "    -r (FADV_RANDOM)\n"
-                 "    -D (dont-drop-page-cache)\n"
+                 "    -D (dont-drop-page-cache before read for() loop.  Default: drop page cache before read for() loop)\n"
                  "    -n total_read_bytes (exit after read this bytes)\n"
                  "    -t save each read time to time.<parent_pid>.<proc_num(0, 1, 2, ...)>\n"
                  "If not -D option is not specified, drop page cache before read()\n"
