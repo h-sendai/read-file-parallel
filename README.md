@@ -1,5 +1,7 @@
 # read-file-parallel
 
+（自分用メモ）benchmarksに移動しました。
+
 複数のプロセスで同時にファイルを読むときの読み出し速度の計測。
 
 ## Usage
